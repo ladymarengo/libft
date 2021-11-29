@@ -1,0 +1,902 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   test_functions.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nsamoilo <nsamoilo@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/11/10 16:39:49 by nsamoilo          #+#    #+#             */
+/*   Updated: 2021/11/10 17:09:46 by nsamoilo         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../libft.h"
+#include "tests.h"
+#include <ctype.h>
+#include <xlocale.h>
+
+void	test_ft_memset()
+{
+	int		size = 10;
+	char	str[size];
+	char	str1[size];
+	
+	memset(str, '0', size);
+	memset(str, '0', size);
+	printf("\nTesting ft_memset...\n");
+	ft_memset(str, '\200', 4);
+	memset(str1, '\200', 4);
+	if (memcmp(str, str1, sizeof(str)))
+		printf("Results from ft_memset and memset are equal\n");
+	else
+		printf("Results from ft_memset and memset are not equal\n");
+}
+
+void	test_ft_bzero()
+{
+	size_t	size;
+	char 	*ft;
+	char	*original;
+
+	size = 12;
+	printf("\nTesting ft_bzero... Comparing ft_bzero and original bzero:\n");
+	original = malloc(size);
+	bzero(original, size);
+	ft = malloc(size);
+	ft_bzero(ft, size);
+	if (memcmp(original, ft, size) != 0)
+		printf("Strings are not equal :(\n");
+	else
+		printf("Strings are equal! :)\n");
+	free(ft);
+	free(original);
+}
+
+
+void	test_ft_memalloc()
+{
+	size_t	size;
+	char 	*ft;
+	char	*original;
+
+	size = 12;
+	printf("\nTesting ft_memalloc... Comparing strings created by ft_memalloc and original malloc + bzero:\n");
+	original = malloc(size);
+	bzero(original, size);
+	ft = ft_memalloc(size);
+	if (memcmp(original, ft, size) != 0)
+		printf("They are not equal...\n");
+	else
+		printf("They are equal!\n");
+	free(ft);
+	free(original);
+}
+
+void	test_ft_memdel()
+{
+	void	*b = malloc(42);
+	void	*p = b;
+
+	printf("\nTesting ft_memdel...\n");
+	ft_memdel(&b);
+	if (b == NULL)
+	{
+		printf("Pointer is NULL. Let's check if memory was freed:\n");
+		free(p);
+	}
+	else
+	{
+		printf("Looks like it doesn't work...");
+		free(b);
+	}
+}
+
+void	test_ft_memcpy()
+{
+	char first[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0'};
+	char second[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0'};
+	printf("\nTesting ft_memcpy...\n");
+	printf("Before copy string looks like '0123456789'\nAfter should look like '0345676789'\n");
+	ft_memcpy((void *)&(first[1]), (void *)&(first[3]), 5);
+	printf("In reality it's '%s'\n", first);
+	printf("Now testing overlapping strings. Memcpy doesn't handle overlapping so string should look like '0123434343'\n");
+	ft_memcpy((void *)&(second[5]), (void *)&(second[3]), 5);
+	printf("It's '%s'\n", second);
+	printf("Check what will happen if original memcpy receives NULL in both params...\n");
+	memcpy(NULL, NULL, 5);
+	printf("And now what will happen with our ft_memcpy...\n");
+	ft_memcpy(NULL, NULL, 5);
+}
+
+void	test_ft_memccpy()
+{
+	char array[] = "0123456789";
+	char	*new;
+	printf("\nTesting ft_memccpy...\nString before is '0123456789'.\n");
+	new = ft_memccpy(array, &array[5], 'i', 3);
+	printf("After copying 3 bytes from '56789' with char 'i' string is '%s' and returned value is '%s'\n", array, new);
+	char second[] = "0123456789";
+	printf("Now testing same '0123456789' string copying 3 bytes from '56789' but with char '6'\n");
+	new = ft_memccpy(second, &second[5], '6', 3);
+	printf("Now string is '%s' and returned value is '%s'\n", second, new);
+}
+
+void	test_ft_memmove()
+{
+	char first[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0'};
+	char second[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0'};
+	printf("\nTesting ft_memmove...\n");
+	printf("Before copy string looks like '0123456789'\nAfter should look like '0345676789'\n");
+	ft_memmove((void *)&(first[1]), (void *)&(first[3]), 5);
+	printf("In reality it's '%s'\n", first);
+	printf("Now testing overlapping strings. Memmove should handle overlapping. We have string '0123456789' and call ft_memmove with substrings with starting indexes 5 and 3. Result should look like '0123434567'\n");
+	ft_memmove((void *)&(second[5]), (void *)&(second[3]), 5);
+	printf("It's '%s'\n", second);
+}
+
+void	test_ft_memchr()
+{
+	char	array[] = {'a', 'b', 'c', 'd', 'c', '\0', 'e'};
+
+	printf("\nTesting ft_memchr...\n");
+	printf("Char array looks like {'a', 'b', 'c', 'd', 'c', '\\0', 'e'}.\n");
+	printf("First let's check that it finds the first 'c' in first 7 bytes. Result: '%s'\n", ft_memchr(array, 'c', 7));
+	printf("What if we look for the symbol 'd' in first 3 bytes: '%s'\n", ft_memchr(array, 'd', 3));
+	printf("Now we'll check if it can find null-terminating symbol. It's not convenient to print so let's compare adresses of this symbol in the string and the returned value: %p and %p\n", &array[5], ft_memchr(array, '\0', 7));
+	printf("Last check to see if it can find 'e' after the null-terminating symbol: '%s'\n", ft_memchr(array, 'e', 7));
+}
+
+void	test_ft_memcmp()
+{
+	char	*first = "abc\0De";
+	char	*second = "abc\0de";
+
+	printf("\nTesting ft_memcmp...\n");
+	printf("Our strings look like this: \"abc\\0de\" and \"abc\\0De\" so they are different only after null-terminating.\n");
+	printf("Let's check memcmp and ft_memcmp for the first 3 bytes: memcmp: %d, ft_memcmp: %d\nNow for the first 6 bytes: memcmp: %d, ft_memcmp: %d\n", memcmp(first, second, 3), ft_memcmp(first, second, 3), memcmp(first, second, 6), ft_memcmp(first, second, 6));
+}
+
+void	test_ft_strdup()
+{
+	char	old[] = "hello";
+	char	*new;
+
+	printf("\nTesting ft_strdup...\n");
+	new = ft_strdup(old);
+	printf("Old string is '%s' and new one is '%s'.\n", old, new); 
+	free(new);
+}
+
+void	test_ft_strcpy()
+{
+	char	old[] = "hi hi hi";
+	char	*new;
+
+	printf("\nTesting ft_strcpy...\n");
+	new = ft_strnew(ft_strlen(old));
+	ft_strcpy(new, old);
+	printf("Old string is '%s' and new one is '%s'.\n", old, new);
+	free(new);
+}
+
+void	test_ft_strncpy()
+{
+	char	old[] = "abcde";
+	char	*new;
+
+	printf("\nTesting ft_strncpy...\n");
+	new = ft_strnew(ft_strlen(old));
+	ft_strncpy(new, old, 3);
+	printf("Old string is '%s' and first 3 symbols of it in the new string: '%s'.\n", old, new);
+	free(new);
+}
+
+void	test_ft_strcat()
+{
+	char	first[20] = "hello ";
+	char	second[6] = "world";
+
+	printf("\nTesting ft_strcat...\nBefore calling first string is '%s' and second is '%s'\n", first, second);
+	ft_strcat(first, second);
+	printf("After calling first string is '%s'\n", first);
+}
+
+void	test_ft_strncat()
+{
+	char	first[20] = "hello ";
+	char	second[6] = "world";
+
+	printf("\nTesting ft_strncat...\nBefore calling first string is '%s' and second is '%s'\n", first, second);
+	ft_strncat(first, second, 3);
+	printf("After calling with n=3 first string is '%s'\n", first);
+}
+
+void	test_ft_strlcat()
+{
+	char	first[20] = "hello ";
+	char	second[6] = "world";
+	char	third[20] = "hello ";
+
+	printf("\nTesting ft_strlcat...\nBefore calling first string is '%s' and second is '%s'\n", first, second);
+	printf("Return values from strlcat and ft_strlcat: %lu and %lu\n", strlcat (third, second, 10), ft_strlcat(first, second, 10));
+	printf("After calling with dstsize 10 should be 'hello wor' and is '%s'\n", first);
+
+	char *str = "the cake is a lie !\0I'm hidden lol\r\n";
+	char buff1[0xF00] = "there is no stars in the sky";
+	char buff2[0xF00] = "there is no stars in the sky";
+	size_t max = strlen("the cake is a lie !\0I'm hidden lol\r\n") + 4;
+
+	printf("Let's try another test with dstsize less than actual dst length and compare retirn values: %lu %lu\n", strlcat(buff1, str, max), ft_strlcat(buff2, str, max));
+}
+
+void	test_ft_strchr()
+{
+	char	str[] = "abcdefdede";
+
+	printf("\nTesting ft_strchr...\n");
+	printf("String is '%s', char is 'd'. Ft_strchr returns '%s'\n", str, ft_strchr(str, 'd'));
+}
+
+void	test_ft_strcmp()
+{
+	char	*first[] = {"abc", "abcd", "", "", "abcde"};
+	char	*second[] = {"abc", "abc", "", "abc", "abcdE"};
+
+	int	i = 0;
+	printf("\nTesting ft_strcmp...\n");
+	while (i < 5)
+	{
+		printf("Is '%s' and '%s' equal?\nStrcmp returns %d, ft_strcmp returns %d.\n", first[i], second[i], strcmp(first[i], second[i]), ft_strcmp(first[i], second[i]));
+		i++;
+	}
+}
+
+void	test_ft_strstr()
+{
+	char	*haystack[] = {"abcdefgef", "abcde", "abcdefbcd", "abc", "a"};
+	char	*needle[] = {"ef", "gjk", "bc", "", "abcde"};
+
+	int i = 0;
+	printf("\nTesting ft_strstr...\n");
+	while (i < 5)
+	{
+		printf("Finding '%s' in '%s'... Found '%s' in whole string.\n", needle[i], haystack[i], ft_strstr(haystack[i], needle[i]));
+		i++;
+	}
+}
+void	test_ft_strrchr()
+{
+	char	str[] = "abcdefdede";
+
+	printf("\nTesting ft_strrchr...\n");
+	printf("String is '%s', char is 'd'. Ft_strrchr returns '%s'\n", str, ft_strrchr(str, 'd'));
+}
+
+void	test_ft_strncmp()
+{
+	char	*first[] = {"abc", "abcd", "", "", "abcde"};
+	char	*second[] = {"abc", "abc", "", "abc", "abcdE"};
+	int	symbols[] = {2, 5, 3, 0, 4};
+
+	int	i = 0;
+	printf("\nTesting ft_strncmp...\n");
+	while (i < 5)
+	{
+		printf("Is '%s' and '%s' equal?\nFor first %d symbols strncmp returns %d and ft_strncmp returns %d\n", first[i], second[i], symbols[i], strncmp(first[i], second[i], symbols[i]), ft_strncmp(first[i], second[i], symbols[i]));
+		i++;
+	}
+}
+
+void	test_ft_strnstr()
+{
+	char	*haystack[] = {"abcdefgef", "abcde", "abcdefbcd", "abc", "a"};
+	char	*needle[] = {"ef", "gjk", "bc", "", "abcde"};
+
+	int i = 0;
+	printf("\nTesting ft_strnstr...\n");
+	while (i < 5)
+	{
+		printf("Finding '%s' in '%s'... Found '%s' in first 5 chars.\n", needle[i], haystack[i], ft_strnstr(haystack[i], needle[i], 5));
+		i++;
+	}
+}
+
+void	test_ft_atoi()
+{
+	char *array[] = {"-2147483648", "    -123", "   12l", "--123", "   +123", "-+42",
+	   "   -  123-3", "", "+2147483647", "99999999999999999999", "-99999999999999999999", "\t\v\f\r\n \f-06050", 0};
+	int i = 0;
+
+	ft_putstr("\nTesting ft_atoi...\n");
+	while (array[i] != 0)
+	{
+		ft_putstr("String is \"");
+		ft_putstr(array[i]);
+		ft_putstr("\", original atoi returns \"");
+		ft_putnbr(atoi(array[i]));
+		ft_putstr("\" and ft_atoi returns \"");
+		ft_putnbr(ft_atoi(array[i]));
+		ft_putstr("\"\n");
+		i++;
+	}
+}
+
+void	test_ft_itoa()
+{
+	ft_putstr("\nTesting ft_itoa...\nShould print 357 0 12345 2 -456 -2147483648:\n");
+	ft_putstr(ft_itoa(357));
+	ft_putchar(' ');
+	ft_putstr(ft_itoa(0));
+	ft_putchar(' ');
+	ft_putstr(ft_itoa(12345));
+	ft_putchar(' ');
+	ft_putstr(ft_itoa(2));
+	ft_putchar(' ');
+	ft_putstr(ft_itoa(-456));
+	ft_putchar(' ');
+	ft_putstr(ft_itoa(-2147483648));
+	ft_putchar('\n');
+}
+
+void	test_ft_putnbr()
+{
+	ft_putstr("\nTesting ft_putnbr...\nShould print 78 -98765 0 4 -11:\n");
+	ft_putnbr(78);
+	ft_putchar(' ');
+	ft_putnbr(-98765);
+	ft_putchar(' ');
+	ft_putnbr(0);
+	ft_putchar(' ');
+	ft_putnbr(4);
+	ft_putchar(' ');
+	ft_putnbr(-11);
+	ft_putchar('\n');
+}
+
+void	test_ft_putnbr_fd()
+{
+	printf("\nTesting ft_putnbr_fd... Should print 35 -900 0 6 -9 to stderr:\n");
+	ft_putnbr_fd(35, 2);
+	ft_putchar_fd(' ', 2);
+	ft_putnbr_fd(-900, 2);
+	ft_putchar_fd(' ', 2);
+	ft_putnbr_fd(0, 2);
+	ft_putchar_fd(' ', 2);
+	ft_putnbr_fd(6, 2);
+	ft_putchar_fd(' ', 2);
+	ft_putnbr_fd(-9, 2);
+	ft_putchar_fd('\n', 2);
+}
+
+void	test_ft_strsplit()
+{
+	char	**result;
+	char	*str = "*hello*fellow***students*";
+	int	i;
+
+	printf("\nTesting ft_strsplit...\n String is '%s'\n", str);
+	result = ft_strsplit(str, '*');
+	for (i = 0; i < 3; i++)
+		printf("%s$\n", result[i]);
+
+	char *s = "split  ||this|for|me|||||!|";
+	i = 0;
+	char **result1 = ft_strsplit(s, '|');
+	printf("String is '%s'\n", s);
+	while (result1[i])
+	{
+		printf("%s$\n", result1[i]);
+		i++;
+	}
+}
+
+void	test_ft_strsub()
+{
+	char	old[] = "This is main string and substring is inside.";
+	char	*substring;
+
+	printf("\nTesting ft_strsub...\n");
+	substring = ft_strsub(old, 24, 9);
+	printf("String: \"%s\" Substring of it: \"%s\"\n", old, substring);
+	free(substring);
+}
+
+void	test_ft_strjoin()
+{
+	char	first[] = "hello ";
+	char	second[] = "world";
+	char	*third;
+
+	printf("\nTesting ft_strjoin...\n");
+	third = ft_strjoin(first, second);
+	printf("First string is \"%s\", second is \"%s\" and new one is \"%s\"\n", first, second, third);
+	free(third);
+}
+
+void	test_ft_strtrim()
+{
+	printf("\nTesting ft_strtrim...\n");
+	printf("Trimming \"  abc   \" -- > \"%s\"\n", ft_strtrim("  abc   "));
+	printf("Trimming \"\" -- > \"%s\"\n", ft_strtrim(""));
+	printf("Trimming \"\\n \\tabc\" -- > \"%s\"\n", ft_strtrim("\n \tabc"));
+	printf("Trimming \"   \n \" -- > \"%s\"\n", ft_strtrim("    \n "));
+}
+
+void	test_ft_putchar()
+{
+	printf("\nTesting ft_putchar... Printing 'Z':\n");
+	ft_putchar('Z');
+	ft_putchar('\n');
+}
+
+void	test_ft_putstr()
+{
+	printf("\nTesting ft_putstr... Printing \"Hello world!\\n\":\n");
+	ft_putstr("Hello world!\n");
+}
+
+void	test_ft_putendl()
+{
+	printf("\nTesting ft_putendl... Printing \"Hello!\":\n");
+	ft_putendl("Hello!");
+}
+
+void	test_ft_putchar_fd()
+{
+	printf("\nTesting ft_putchar_fd... Should write 'E' to stderr:\n");
+	ft_putchar_fd('E', 2);
+	ft_putchar_fd('\n', 2);
+}
+
+void	test_ft_putstr_fd()
+{
+	printf("\nTesting ft_putstr_fd... Should write \"Error!\\n\" to stderr:\n");
+	ft_putstr_fd("Error!\n", 2);
+}
+
+void	test_ft_putendl_fd()
+{
+	printf("\nTesting ft_putendl_fd... Should write \"Is it error?\" to stderr:\n");
+	ft_putendl_fd("Is it error?", 2);
+}
+
+void	test_ft_isalpha()
+{
+	char c[] = {'a', 'z', 'A', 'Z', 'g', 'G', ' ', '=', '0', '9', '\0', 's'};
+ 	int i = 0;
+
+	printf("\nTesting ft_isalpha...\n");
+	while (c[i] != 's')
+	{
+		printf("Char is '%c'. Results from calling different functions:\nisalpha: %d, ft_isalpha: %d\n", c[i], isalpha(c[i]), ft_isalpha(c[i]));
+		i++;
+	}
+}
+
+void	test_ft_isdigit()
+{
+	char c[] = {'g', 'G', ' ', '=', '0', '9', '\0', 's'};
+ 	int i = 0;
+
+	printf("\nTesting ft_isdigit...\n");
+	while (c[i] != 's')
+	{
+		printf("Char is '%c'. Results from calling different functions:\nisdigit: %d, ft_isdigit: %d\n", c[i], isdigit(c[i]), ft_isdigit(c[i]));
+		i++;
+	}
+}
+
+void	test_ft_isalnum()
+{
+	char c[] = {'a', 'z', 'A', 'Z', 'g', 'G', ' ', '=', '0', '9', '\0', 's'};
+ 	int i = 0;
+
+	printf("\nTesting ft_isalnum...\n");
+	while (c[i] != 's')
+	{
+		printf("Char is '%c'. Results from calling different functions:\nisalnum: %d, ft_isalnum: %d\n", c[i], isalnum(c[i]), ft_isalnum(c[i]));
+		i++;
+	}
+}
+
+void	test_ft_isprint()
+{
+	char c[] = {'g', 'G', ' ', '=', '0', '9', '\0', 's'};
+ 	int i = 0;
+
+	printf("\nTesting ft_isprint...\n");
+	while (c[i] != 's')
+	{
+		printf("Char is '%c'. Results from calling different functions:\nisprint: %d, ft_isprint: %d\n", c[i], isprint(c[i]), ft_isprint(c[i]));
+		i++;
+	}
+}
+
+void	test_ft_isascii()
+{
+	int i = 40;
+
+	printf("\nTesting ft_isascii...\n");
+	printf("Char is '%c'. Results from calling different functions:\nisascii: %d, ft_isascii: %d\n", i, isascii(i), ft_isascii(i));
+	i++;
+
+	int x = 128;
+	printf("Char is '%c'. Results from calling different functions:\nisascii: %d, ft_isascii: %d\n", x, isascii(x), ft_isascii(x));
+}
+
+void	test_ft_tolower()
+{
+	char c[] = {'a', 'A', 'z', 'Z', 'g', 'G', ' ', '+', 0};
+	int i = 0;
+
+	printf("\nTesting ft_tolower...\n");
+	while (c[i] != 0)
+	{
+		printf("Char is '%c'. Results from calling different functions:\ntolower: '%c', ft_tolower: '%c'\n", c[i], tolower(c[i]), ft_tolower(c[i]));
+		i++;
+	}
+}
+
+void	test_ft_toupper()
+{
+	char c[] = {'a', 'A', 'z', 'Z', 'g', 'G', ' ', '+', 0};
+	int i = 0;
+
+	printf("\nTesting ft_toupper...\n");
+	while (c[i] != 0)
+	{
+		printf("Char is '%c'. Results from calling different functions:\ntoupper: '%c', ft_toupper: '%c'\n", c[i], toupper(c[i]), ft_toupper(c[i]));
+		i++;
+	}
+}
+
+void	test_ft_strnew()
+{
+	char	*new;
+	int		i;
+	int		len;
+
+	len = 5;
+	new = ft_strnew(len);
+	i = 0;
+	while (i < len)
+	{
+		new[i] = '0' + i;
+		i++;
+	}
+	ft_putstr("\nTesting ft_strnew... Should print 01234 if worked:\n");
+	ft_putstr(new);
+	ft_putchar('\n');
+	free(new);
+}
+
+void	test_ft_strlen()
+{
+	ft_putstr("\nTesting ft_strlen... Printing len of \"hello\":\n");
+	ft_putnbr(ft_strlen("hello"));
+	ft_putchar('\n');
+	ft_putstr("Printing len of \"\":\n");
+	ft_putnbr(ft_strlen(""));
+	ft_putchar('\n');
+	ft_putstr("Printing len of \"a\":\n");
+	ft_putnbr(ft_strlen("a"));
+	ft_putchar('\n');
+}
+
+void	test_ft_strdel()
+{
+	char	*new;;
+
+	new = ft_strnew(5);
+	char *ptr = new;
+	new = "hello";
+	ft_strdel(&ptr);
+	ft_putstr("\nTesting ft_strdel...\n");
+	if (ptr == NULL)
+		ft_putstr("It works\n");
+	else
+		ft_putstr("It doesn't work\n");
+}
+
+void	test_ft_strclr()
+{
+	int i = 0;
+	int	len = 5;
+	char	str[] = "hello";
+
+	ft_strclr(str);
+	ft_putstr("\nTesting ft_strclr... Should print nothing if string was cleared:\n");
+	while (i < len)
+	{
+		ft_putchar(str[i]);
+		i++;
+	}
+	ft_putchar('\n');
+}
+
+void	iter_func(char *c)
+{
+	*c = 'F';
+}
+
+void	test_ft_striter()
+{
+	char	str[] = "hello";
+
+	ft_putstr("\nTesting ft_striter... Old string is \"");
+	ft_putstr(str);
+	ft_putstr("\"\n");
+	ft_striter(str, &iter_func);
+	ft_putstr("After calling ft_striter string should look like \"FFFFF\":\n");
+	ft_putstr(str);
+	ft_putchar('\n');
+}
+
+void	iteri_func(unsigned int n, char *c)
+{
+	if (n % 2)
+	{
+		*c = 'O';
+	}
+}
+
+void	test_ft_striteri()
+{
+	char	str[] = "fffffff";
+
+	ft_putstr("\nTesting ft_striteri... Old string is \"");
+	ft_putstr(str);
+	ft_putstr("\"\n");
+	ft_striteri(str, &iteri_func);
+	ft_putstr("After calling ft_striteri string should look like \"fOfOfOf\":\n");
+	ft_putstr(str);
+	ft_putchar('\n');
+}
+
+char	map_func(char c)
+{;
+	return (c + 2);
+}
+
+void	test_ft_strmap()
+{
+	char	str[] = "DDDDD";
+	char	*new;
+
+	ft_putstr("\nTesting ft_strmap... Old string is \"");
+	ft_putstr(str);
+	ft_putstr("\"\n");
+	new = ft_strmap(str, &map_func);
+	ft_putstr("New string should look like \"FFFFF\":\n");
+	ft_putstr(new);
+	ft_putchar('\n');
+	free(new);
+}
+
+char	mapi_func(unsigned n, char c)
+{
+	char new = 'O';
+	if (n % 2)
+		return (new);
+	else
+		return (c);
+}
+
+void	test_ft_strmapi()
+{
+	char	str[] = "fffffff";
+	char	*new;
+
+	ft_putstr("\nTesting ft_strmapi... Old string is \"");
+	ft_putstr(str);
+	ft_putstr("\"\n");
+	new = ft_strmapi(str, &mapi_func);
+	ft_putstr("New string should look like \"fOfOfOf\":\n");
+	ft_putstr(new);
+	ft_putchar('\n');
+	free(new);
+}
+
+void	test_ft_strequ()
+{
+	ft_putstr("\nTesting ft_strequ... Checking if \"abc\" and \"abC\" are equal:\n");
+	if (ft_strequ("abc", "abC"))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if \"abc\" and \"abc\" are equal:\n");
+	if (ft_strequ("abc", "abc"))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if \"\" and \"\" are equal:\n");
+	if (ft_strequ("", ""))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if \"abc\" and \"abcd\" are equal:\n");
+	if (ft_strequ("abc", "abcd"))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if \"abc\" and \"\" are equal:\n");
+	if (ft_strequ("abc", ""))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+}
+
+void	test_ft_strnequ()
+{
+	ft_putstr("\nTesting ft_strnequ... Checking if first 2 letters of \"abc\" and \"abC\" are equal:\n");
+	if (ft_strnequ("abc", "abC", 2))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if first 5 letters of \"abc\" and \"abc\" are equal:\n");
+	if (ft_strnequ("abc", "abc", 5))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if first letter of \"\" and \"\" are equal:\n");
+	if (ft_strnequ("", "", 1))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if 4 first letters of \"abc\" and \"abcd\" are equal:\n");
+	if (ft_strnequ("abc", "abcd", 4))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+	ft_putstr("Checking if 0 first letters of \"abc\" and \"\" are equal:\n");
+	if (ft_strnequ("abc", "", 0))
+		ft_putstr("Yes\n");
+	else
+		ft_putstr("No\n");
+}
+
+void	test_ft_lstprint()
+{
+	t_list	*lst = ft_lstnew("0", 2);
+	ft_lstadd(&lst, ft_lstnew("1", 2));
+	ft_lstadd(&lst, ft_lstnew("2", 2));
+	printf("\nTesting ft_lstprint...\n");
+	printf("Printing list:\n");
+	ft_lstprint(lst);
+	printf("Printing NULL:\n");
+	ft_lstprint(NULL);
+	}
+
+void	test_ft_lstnew()
+{
+	t_list	*new;
+	char	*str;
+	printf("\nTesting ft_lstnew...\n");
+	str = ft_strdup("hello");
+	size_t len = ft_strlen(str) + 1;
+	printf("Creating new link with 'hello' as the content\n");
+	new = ft_lstnew(str, len);
+	printf("Checking new links content: '%s'\n", new->content);
+	t_list	*other;
+	printf("Creating new link with NULL content and size = 5\n");
+	other = ft_lstnew(NULL, 5);
+	printf("Checking new links content size: %lu\n", other->content_size);
+}
+
+void	delete(void *str, size_t size)
+{
+	size = 0;
+	free(str);
+}
+
+void	test_ft_lstdelone()
+{
+	char	*str = ft_strdup("hello");
+	size_t	len = ft_strlen(str) + 1;
+	t_list	*new = ft_lstnew(str, len);
+	printf("\nTesting ft_lstdelone...\n");
+	printf("Deleting...\n");
+	ft_lstdelone(&new, &delete);
+	if (new == NULL)
+		printf("Looks like it works\n");
+	else
+		printf("Looks like it doesn't work\n");
+}
+
+void	test_ft_lstdel()
+{
+	t_list	*one = ft_lstnew(ft_strdup("hello"), 6);
+	t_list	*two = ft_lstnew(ft_strdup("world"), 6);
+	ft_lstadd(&one, two);
+	printf("\nTesting ft_lstdel...\nDeleting...\n");
+	ft_lstdel(&one, &delete);
+	if (one == NULL)
+	{
+		printf("Looks like it works.\nTrying to access second element:\n");
+		printf("Second element content is '%s'\n", two->content);
+	}
+	else
+		printf("Looks like it doesn't work\n");
+}
+
+void	test_ft_lstadd()
+{
+	t_list	*list1 = ft_lstnew("0", 2);
+	printf("\nTesting ft_lstadd...\nList before has one link:\n");
+	ft_lstprint(list1);
+	ft_lstadd(&list1, ft_lstnew("1", 2));
+	ft_lstadd(&list1, ft_lstnew("2", 2));
+	printf("List after has three links:\n");
+	ft_lstprint(list1);
+}
+
+void	iter_f(t_list *elem)
+{
+	char	*p = (char *) (elem->content);
+	while (*p)
+	{
+		*p  = '9';
+		p++;
+	}
+}
+
+void	test_ft_lstiter()
+{
+	t_list	*list1 = ft_lstnew("0", 2);
+	printf("\nTesting ft_lstiter...\n");
+	ft_lstadd(&list1, ft_lstnew("1", 2));
+	ft_lstadd(&list1, ft_lstnew("2", 2));
+	printf("List before looks like this:\n");
+	ft_lstprint(list1);
+	printf("Calling ft_lstiter with function that changes all symbols to '9'. Now list is:\n");
+	ft_lstiter(list1, &iter_f);
+	ft_lstprint(list1);
+}
+
+t_list	*map_f(t_list *elem)
+{
+	t_list *new = ft_lstnew("Ok", 3);
+	(void) elem;
+	return (new);
+}
+
+void	test_ft_lstmap()
+{
+	t_list	*list1 = ft_lstnew("0", 2);
+	printf("\nTesting ft_lstmap...\n");
+	ft_lstadd(&list1, ft_lstnew("1", 2));
+	ft_lstadd(&list1, ft_lstnew("2", 2));
+	printf("List before looks like this:\n");
+	ft_lstprint(list1);
+	printf("Calling ft_lstmap with function that changes content to 'Ok'. Now original list is:\n");
+	t_list *new = ft_lstmap(list1, &map_f);
+	ft_lstprint(list1);
+	printf("And the new list is:\n");
+	ft_lstprint(new);
+}
+
+void	test_ft_strisx()
+{
+	char *array[] = {"abcdefz", "012239", "01asd"};
+
+	printf("\nTesting ft_strisx...\nCalling different strings with isalpha, isdigit, isalnum:\n");
+	for (int i = 0; i < 3; i++)
+		printf("String is '%s', isaplha: %d, isdigit: %d, isalnum: %d\n", array[i], ft_strisx(array[i], &ft_isalpha), ft_strisx(array[i], &ft_isdigit), ft_strisx(array[i], &ft_isalnum));
+}
+
+void	test_ft_lstaddend()
+{
+	t_list	*list1 = ft_lstnew("0", 2);
+	printf("\nTesting ft_lstaddend...\nList before has one link:\n");
+	ft_lstprint(list1);
+	ft_lstaddend(&list1, ft_lstnew("1", 2));
+	ft_lstaddend(&list1, ft_lstnew("2", 2));
+	printf("List after has three links:\n");
+	ft_lstprint(list1);
+}
+
+void	test_ft_strrev()
+{
+	printf("\nTesting ft_strrev...\n");
+	printf("String is 'hello world!', new reverse string is '%s'\n", ft_strrev("hello world!"));
+}
